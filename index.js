@@ -4,9 +4,11 @@ const app = express();
 const PORT = 3000;
 
 const mongoose = require('mongoose');
-const User = require('./models/user');
+const userRouter = require('./routes/user');
 app.set('view engine', 'ejs');
-app.set('views',Path.resolve("./views"));
+app.set('views', Path.resolve(__dirname, 'views'));
+
+app.use(express.urlencoded({ extended: false }));
 
 mongoose
   .connect('mongodb://localhost:27017/blogging_app')
@@ -17,9 +19,7 @@ mongoose
     console.error('MongoDB connection failed:', error.message);
   });
 
-app.get('/', (req, res) => {
-  res.render('home');
-});
+app.use('/user', userRouter);
 
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);

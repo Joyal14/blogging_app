@@ -1,3 +1,4 @@
+const { createHmac } = require("crypto");
 const { Schema, model } = require("mongoose");
 
 const userSchema = new Schema(
@@ -26,11 +27,19 @@ const userSchema = new Schema(
     },
     profileImage: {
       type: String,
-      default: "default-profile.png",
+      default: "/images/default.png",
     },
   },
   { timestamps: true },
 );
+userSchema.pre("save", function () {
+  const user = this;
+  if (!user.isModified("password")) return;
+  const salt = Math.random().toString(36);
+  user.salt = salt;
+  const hashPassword = createHmac("sha256", salt).update(user.password).digest("hex");
+  user.password = hashPassword;
+  });
 
 const User = model("User", userSchema);
 
