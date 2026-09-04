@@ -1,3 +1,4 @@
+const { createHmac } = require("crypto");
 const { Schema, model } = require("mongoose");
 
 const userSchema = new Schema(
@@ -13,7 +14,6 @@ const userSchema = new Schema(
     },
     salt: {
       type: String,
-     
     },
     password: {
       type: String,
@@ -26,11 +26,31 @@ const userSchema = new Schema(
     },
     profileImage: {
       type: String,
-      default: "default-profile.png",
+      default: "/images/default.png",
     },
   },
   { timestamps: true },
 );
+userSchema.pre("save", function () {
+  const user = this;
+  if (!user.isModified("password")) return;
+  const salt = Math.random().toString(36);
+  user.salt = salt;
+  const hashPassword = createHmac("sha256", salt)
+    .update(user.password)
+    .digest("hex");
+  user.password = hashPassword;
+});
+
+userSchema.static("matchPassword", async function (email, password) {
+  const user = await this.findOne({ email });
+  if (!user) throw new Error("User not found");
+  const hashPassword = createHmac("sha256", user.salt)
+    .update(password)
+    .digest("hex");
+  if (hashPassword !== user.password) throw new Error("Invalid password");
+  return { ...user.toObject(), password: undefined, salt: undefined };
+});
 
 const User = model("User", userSchema);
 
