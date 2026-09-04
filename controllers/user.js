@@ -15,10 +15,10 @@ const renderSignup = (req, res) => {
 const signinUser = async (req, res) => {
   try {
     const { email, password } = req.body;
-    const user = await User.matchPassword(email, password);
-    req.session.userId = user._id;
-    console.log('User signed in:', user);
-    return res.redirect('/');
+    const token = await User.matchPasswordAndCreateToken(email, password);
+   
+    console.log('User signed in:', token);
+    return res.cookie('token', token, { httpOnly: true }).redirect('/');
   } catch (error) {
     return res.render('signin', { error: error.message });
   }
