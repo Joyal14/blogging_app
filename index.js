@@ -1,5 +1,6 @@
 const Path = require('path');
 const express = require('express');
+const session = require('express-session');
 const app = express();
 const PORT = 3000;
 
@@ -9,6 +10,12 @@ app.set('view engine', 'ejs');
 app.set('views', Path.resolve(__dirname, 'views'));
 
 app.use(express.urlencoded({ extended: false }));
+app.use(session({
+  secret: 'your-secret-key',
+  resave: false,
+  saveUninitialized: true,
+  cookie: { secure: false }
+}));
 
 mongoose
   .connect('mongodb://localhost:27017/blogging_app')
@@ -18,6 +25,10 @@ mongoose
   .catch((error) => {
     console.error('MongoDB connection failed:', error.message);
   });
+
+app.get('/', (req, res) => {
+  res.render('home');
+});
 
 app.use('/user', userRouter);
 
