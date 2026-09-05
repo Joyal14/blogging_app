@@ -35,12 +35,35 @@ const createUser = async (req, res) => {
   }
 };
 
+const apiSigninUser = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    const token = await User.matchPasswordAndCreateToken(email, password);
+    return res.status(200).json({ token });
+  } catch (error) {
+    return res.status(401).json({ error: error.message });
+  }
+};
+
+const apiCreateUser = async (req, res) => {
+  try {
+    const { username, email, password } = req.body;
+    const user = new User({ username, email, password });
+    await user.save();
+    return res.status(201).json({ message: 'User created successfully' });
+  } catch (error) {
+    return res.status(400).json({ error: error.message });
+  }
+};
+
 module.exports = {
   renderHome,
   renderSignin,
   renderSignup,
   signinUser,
-  createUser
+  createUser,
+  apiSigninUser,
+  apiCreateUser
 };
 
 

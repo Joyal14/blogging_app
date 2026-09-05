@@ -7,10 +7,12 @@ const { checkForAuthenticationCookie } = require('./middlewares/authentication')
 
 const mongoose = require('mongoose');
 const userRouter = require('./routes/user');
+const apiUserRouter = require('./routes/api-user');
 app.set('view engine', 'ejs');
 app.set('views', Path.resolve(__dirname, 'views'));
 
 app.use(express.urlencoded({ extended: false }));
+app.use(express.json());
 app.use(cookieParser());
 app.use(checkForAuthenticationCookie('token'));
 
@@ -28,6 +30,7 @@ app.get('/', (req, res) => {
 });
 
 app.use('/user', userRouter);
+app.use('/api/user', apiUserRouter);
 
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
