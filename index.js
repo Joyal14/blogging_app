@@ -7,6 +7,7 @@ const { checkForAuthenticationCookie } = require('./middlewares/authentication')
 
 const mongoose = require('mongoose');
 const userRouter = require('./routes/user');
+const blogRouter = require('./routes/blog');
 const apiUserRouter = require('./routes/api-user');
 app.set('view engine', 'ejs');
 app.set('views', Path.resolve(__dirname, 'views'));
@@ -31,6 +32,7 @@ app.get('/', (req, res) => {
 
 app.use('/user', userRouter);
 app.use('/api/user', apiUserRouter);
+app.use('/blog',blogRouter);
 
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
