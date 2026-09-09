@@ -13,12 +13,16 @@ const storage = multer.diskStorage({
 const upload = multer({ 
   storage: storage,
   fileFilter: (req, file, cb) => {
-    const allowedTypes = /jpeg|jpg|png|gif/;
-    const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-    const mimetype = allowedTypes.test(file.mimetype);
-    
-    if (mimetype && extname) return cb(null, true);
-    cb(new Error('Only image files are allowed'));
+    const allowedExtensions = new Set(['.jpeg', '.jpg', '.png', '.gif', '.webp']);
+    const extension = path.extname(file.originalname).toLowerCase();
+    const hasImageMimeType = file.mimetype.startsWith('image/');
+    const hasGenericMimeType = file.mimetype === 'application/octet-stream';
+
+    if (allowedExtensions.has(extension) && (hasImageMimeType || hasGenericMimeType)) {
+      return cb(null, true);
+    }
+
+    cb(new Error('Only JPG, JPEG, PNG, GIF, and WebP image files are allowed'));
   }
 });
 

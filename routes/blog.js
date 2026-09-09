@@ -5,6 +5,9 @@ const upload = require('../middlewares/upload');
 
 router.get("/add-blog", addBlog);
 
-router.post('/add-blog', upload.single('image'), addBlogPost);
+router.post('/add-blog', upload.fields([
+	{ name: 'image', maxCount: 1 },
+	{ name: 'coverImage', maxCount: 1 }
+]), addBlogPost);
 
 module.exports = router;
