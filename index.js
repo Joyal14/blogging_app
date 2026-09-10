@@ -10,6 +10,7 @@ const userRouter = require('./routes/user');
 const blogRouter = require('./routes/blog');
 const apiUserRouter = require('./routes/api-user');
 const apiBlogRouter = require('./routes/api-blog');
+const apiCommentRouter = require('./routes/api-comment');
 app.set('view engine', 'ejs');
 app.set('views', Path.resolve(__dirname, 'views'));
 
@@ -36,7 +37,7 @@ app.use('/user', userRouter);
 app.use('/api/user', apiUserRouter);
 app.use('/blog',blogRouter);
 app.use('/api/blog', apiBlogRouter);
-
+app.use('/api/comment', apiCommentRouter);
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });
