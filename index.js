@@ -1,21 +1,23 @@
 const Path = require('path');
 const express = require('express');
-const session = require('express-session');
 const app = express();
-const PORT = 3000;
+const PORT = 8000;
+const cookieParser = require('cookie-parser');
+const { checkForAuthenticationCookie } = require('./middlewares/authentication');
 
 const mongoose = require('mongoose');
 const userRouter = require('./routes/user');
+const blogRouter = require('./routes/blog');
+const apiUserRouter = require('./routes/api-user');
+const apiBlogRouter = require('./routes/api-blog');
 app.set('view engine', 'ejs');
 app.set('views', Path.resolve(__dirname, 'views'));
 
 app.use(express.urlencoded({ extended: false }));
-app.use(session({
-  secret: 'your-secret-key',
-  resave: false,
-  saveUninitialized: true,
-  cookie: { secure: false }
-}));
+app.use(express.json());
+app.use(express.static(Path.resolve(__dirname, 'public')));
+app.use(cookieParser());
+app.use(checkForAuthenticationCookie('token'));
 
 mongoose
   .connect('mongodb://localhost:27017/blogging_app')
@@ -27,10 +29,13 @@ mongoose
   });
 
 app.get('/', (req, res) => {
-  res.render('home');
+  res.render('home',{ user: req.user || null});
 });
 
 app.use('/user', userRouter);
+app.use('/api/user', apiUserRouter);
+app.use('/blog',blogRouter);
+app.use('/api/blog', apiBlogRouter);
 
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);

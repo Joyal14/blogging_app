@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <%- include('./partials/head') %>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Error</title>
+  </head>
+  <body>
+    <%- include('./partials/nav') %>
+    <div class="container mt-4">
+      <div class="alert alert-danger" role="alert">
+        <h4 class="alert-heading">Error!</h4>
+        <p><%= errorMessage || 'Something went wrong. Please try again.' %></p>
+        <hr />
+        <a href="/" class="btn btn-primary">Go to Home</a>
+        <a href="/blog/add-blog" class="btn btn-secondary">Try Again</a>
+      </div>
+    </div>
+    <%- include('./partials/scripts') %>
+  </body>
+</html>
