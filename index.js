@@ -1,7 +1,8 @@
+require('dotenv').config();
 const Path = require('path');
 const express = require('express');
 const app = express();
-const PORT = 8000;
+const PORT = process.env.PORT || 8000;
 const cookieParser = require('cookie-parser');
 const { checkForAuthenticationCookie } = require('./middlewares/authentication');
 
@@ -21,7 +22,7 @@ app.use(cookieParser());
 app.use(checkForAuthenticationCookie('token'));
 
 mongoose
-  .connect('mongodb://localhost:27017/blogging_app')
+  .connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/blogging_app')
   .then(() => {
     console.log('MongoDB connected successfully');
   })
