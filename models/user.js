@@ -1,4 +1,4 @@
-const { createHmac } = require("crypto");
+const bcrypt = require("bcrypt");
 const { Schema, model } = require("mongoose");
 const {
   createTokenForUser,
@@ -14,9 +14,6 @@ const userSchema = new Schema(
       type: String,
       required: true,
       unique: true,
-    },
-    salt: {
-      type: String,
     },
     password: {
       type: String,
@@ -34,24 +31,17 @@ const userSchema = new Schema(
   },
   { timestamps: true },
 );
-userSchema.pre("save", function () {
+userSchema.pre("save", async function () {
   const user = this;
   if (!user.isModified("password")) return;
-  const salt = Math.random().toString(36);
-  user.salt = salt;
-  const hashPassword = createHmac("sha256", salt)
-    .update(user.password)
-    .digest("hex");
-  user.password = hashPassword;
+  user.password = await bcrypt.hash(user.password, 12);
 });
 
 userSchema.static("matchPasswordAndCreateToken", async function (email, password) {
   const user = await this.findOne({ email });
   if (!user) throw new Error("User not found");
-  const hashPassword = createHmac("sha256", user.salt)
-    .update(password)
-    .digest("hex");
-  if (hashPassword !== user.password) throw new Error("Invalid password");
+  const passwordMatches = await bcrypt.compare(password, user.password);
+  if (!passwordMatches) throw new Error("Invalid password");
   const token = createTokenForUser(user);
   return token;
 });
