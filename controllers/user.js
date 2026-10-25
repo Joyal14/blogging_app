@@ -2,6 +2,13 @@ const User = require('../models/user');
 const {
   createTokenForUser,
 } = require('../services/authentication');
+const authCookieOptions = {
+  httpOnly: true,
+  sameSite: 'lax',
+  secure: process.env.NODE_ENV === 'production',
+  maxAge: 24 * 60 * 60 * 1000,
+  path: '/',
+};
 
 const renderHome = (req, res) => {
   res.render('home');
@@ -16,7 +23,7 @@ const renderSignup = (req, res) => {
 };
 
 const logoutUser = (req, res) => {
-  res.clearCookie('token');
+  res.clearCookie('token', authCookieOptions);
   res.redirect('/');
 }
 
@@ -25,8 +32,7 @@ const signinUser = async (req, res) => {
     const { email, password } = req.body;
     const token = await User.matchPasswordAndCreateToken(email, password);
    
-    console.log('User signed in:', token);
-    return res.cookie('token', token, { httpOnly: true }).redirect('/');
+    return res.cookie('token', token, authCookieOptions).redirect('/');
   } catch (error) {
     return res.render('signin', { error: error.message });
   }
