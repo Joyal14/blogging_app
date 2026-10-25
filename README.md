@@ -1,82 +1,92 @@
 # Blogging App
 
-A Node.js blogging project with an Express server, EJS-rendered pages, MongoDB persistence, and API routes for users, blogs, and comments.
+A server-rendered blogging application built with Node.js, Express, EJS, and MongoDB.
 
-## Technology stack
+## Requirements
 
-- **Node.js and Express** — HTTP server and routing.
-- **MongoDB and Mongoose** — database connection and models.
-- **EJS** — server-rendered views.
-- **JSON Web Token and cookie-parser** — authentication-related functionality.
-- **Multer** — uploaded images.
-- **dotenv** — environment configuration.
-- **nodemon** — development restart workflow.
+- Node.js 18 or newer
+- MongoDB running locally or a MongoDB connection string
 
-## Project structure
+## Setup
 
-```text
-controllers/     Request handlers for users, blogs, and comments
-middlewares/    Authentication and upload middleware
-models/         Database models
-routes/         Web and API routes
-services/       Shared services, including authentication
-public/         Static assets
-views/          EJS templates
-index.js        Server entry point
-```
+1. Install dependencies:
 
-## Getting started
+   ```bash
+   npm install
+   ```
 
-### Prerequisites
+2. Create a `.env` file in the project root:
 
-- Node.js and npm compatible with the dependencies in `package.json`.
-- A running local MongoDB instance or a MongoDB connection URI.
+   ```env
+   PORT=8000
+   MONGODB_URI=mongodb://localhost:27017/blogging_app
+   JWT_SECRET=replace-with-a-long-random-secret
+   ```
 
-### Install
+   Generate a strong secret with:
 
-```bash
-git clone https://github.com/Joyal14/blogging_app.git
-cd blogging_app
-npm install
-```
+   ```bash
+   node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+   ```
 
-### Configure
+3. Start MongoDB.
 
-Create a local `.env` file in the project root:
+4. Start the application:
 
-```dotenv
-PORT=8000
-MONGODB_URI=mongodb://localhost:27017/blogging_app
-```
+   ```bash
+   npm start
+   ```
 
-The server defaults to port `8000` and the local MongoDB URI above when those environment variables are absent. Replace the URI if you use a different database. The repository ignores `.env`; do not commit database credentials or other secrets.
+   The application is available at `http://localhost:8000`.
 
-Before deploying publicly, review authentication configuration, secret management, input validation, upload handling, and access controls. This README does not certify the application as production-ready.
+## Development
 
-### Run
+Run the application with automatic restarts:
 
 ```bash
-# Development (automatic restart)
 npm run dev
-
-# Standard start
-npm start
 ```
 
-With the default port, open [http://localhost:8000](http://localhost:8000). Confirm that the server reports a successful MongoDB connection before testing database-dependent features.
+## GitHub Actions CI/CD
 
-## Routes at a glance
+The workflow in `.github/workflows/ci-cd.yml` runs on pushes and pull requests. It
+installs dependencies with `npm ci`, runs the tests, and builds the Docker image.
+After those checks pass, a push to `main` triggers a Render deployment.
 
-| Method | Path | Purpose |
+To enable deployment:
+
+1. Create a Render Web Service from this repository, using the Docker runtime and
+   the `main` branch. Disable Render's automatic deploys so it deploys only after
+   the GitHub Actions checks pass.
+2. Configure `MONGODB_URI` with a reachable MongoDB connection string and set
+   `JWT_SECRET` in the Render service's environment variables. Do not commit
+   either value to the repository.
+3. In Render, create a deploy hook for the service. In GitHub, add a repository
+   Actions secret named `RENDER_DEPLOY_HOOK` containing that hook URL.
+4. Keep the tracked `package-lock.json` in the repository. It lets `npm ci`
+   install the exact dependency versions in CI.
+
+Pull requests and pushes to other branches run CI but do not deploy. Merge or
+push to `main` to deploy after the checks pass.
+
+## Environment Variables
+
+| Variable | Description | Default |
 | --- | --- | --- |
-| GET | `/` | Render the home view. |
-| POST | `/api/user/signup` | User signup handler. |
-| POST | `/api/user/signin` | User signin handler. |
-| GET | `/api/blog/blog-list` | Blog listing handler. |
-| POST | `/api/blog/add-blog-post` | Blog creation handler; upload middleware accepts `image` and `coverImage` fields. |
+| `PORT` | Port used by the Express server | `8000` |
+| `MONGODB_URI` | MongoDB connection string | `mongodb://localhost:27017/blogging_app` |
+| `JWT_SECRET` | Required secret used to sign authentication tokens | None |
 
-Additional routers are mounted at `/user`, `/blog`, and `/api/comment`. Consult the relevant route and controller files for request bodies, authentication requirements, and response formats; the table is an overview rather than a complete API contract.
+Authentication tokens and sign-in cookies expire after 24 hours. Cookies use `httpOnly` and `sameSite=lax`; the `secure` flag is enabled in production.
 
-## Validation and current scope
+Keep `.env` private. It is excluded from version control by `.gitignore`.
 
-The package provides `start` and `dev` scripts; no automated test script is currently defined in `package.json`. Startup, endpoint behavior, and deployment have not been independently validated for this documentation update.
+## Main Routes
+
+- `/` - Home page
+- `/user/signup` - User registration
+- `/user/signin` - User sign-in
+- `/blog/add-blog` - Add a blog post
+- `/api/user` - User API routes
+- `/api/blog` - Blog API routes
+- `/api/comment` - Comment API routes
